@@ -30,8 +30,5 @@ jobs:
           PKG=$(node -p "require('./package.json').version")
           [ "v$PKG" = "$TAG" ] || { echo "Tag $TAG != package.json v$PKG"; exit 1; }
 
-      - name: Package
-        run: npx vsce package --no-yarn
-
       - name: Publish to OpenVSX
-        run: npx ovsx publish *.vsix -p ${{ secrets.OPEN_VSX_TOKEN }} --skip-duplicate
+        run: npx ovsx publish -p ${{ secrets.OPEN_VSX_TOKEN }} --skip-duplicate
