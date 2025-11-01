@@ -1,11 +1,11 @@
+/* eslint-disable @typescript-eslint/array-type */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /*---------------------------------------------------------------------------------------------
  *  Copyright (C) 2023-2025 Posit Software, PBC. All rights reserved.
  *  Licensed under the Elastic License 2.0. See LICENSE.txt for license information.
  *--------------------------------------------------------------------------------------------*/
 
 import * as vscode from 'vscode';
-
-// eslint-disable-next-line import/no-unresolved
 import * as positron from 'positron';
 
 export interface JupyterSessionState {
@@ -47,7 +47,7 @@ export interface JupyterKernel {
  */
 export interface JupyterKernelSpec {
 	/** Command used to start the kernel and an array of command line arguments */
-	argv: Array<string>;
+	argv: string[];
 
 	/** The kernel's display name */
 	display_name: string;  // eslint-disable-line
@@ -195,7 +195,7 @@ export interface JupyterLanguageRuntimeSession extends positron.LanguageRuntimeS
 	 * the frontend comm to send a message to the kernel and wait for a
 	 * response.
 	 */
-	callMethod(method: string, ...args: Array<any>): Promise<any>;
+	callMethod(method: string, ...args: any[]): Promise<any>;
 
 	/**
 	 * Return logfile path

@@ -1,5 +1,5 @@
-import { execFile } from 'child_process'
-import { promisify } from 'util'
+import { execFile } from 'child_process';
+import { promisify } from 'util';
 import { promises as fsPromises, constants as fsConstants } from 'fs';
 import * as os from 'os';
 import * as path from 'path';
@@ -31,7 +31,19 @@ export class GoRuntimeManager implements positron.LanguageRuntimeManager {
 		runtimeMetadata: positron.LanguageRuntimeMetadata,
 		sessionMetadata: positron.RuntimeSessionMetadata
 	): Promise<positron.LanguageRuntimeSession> {
-		return new GoSession(runtimeMetadata, sessionMetadata);
+		this.logger.info(`Creating Go runtime session for runtime ${runtimeMetadata.runtimeName} (${runtimeMetadata.runtimeId})`);
+		const kernelSpec: JupyterKernelSpec = {
+			argv: [
+				runtimeMetadata.runtimePath,
+				"-kernel", "'{connection_file}'",
+				"-log_file", "'{log_file}'"
+			],
+			display_name: runtimeMetadata.runtimeName,
+			language: 'go',
+			kernel_protocol_version: '5.3'
+		};
+		this.logger.info(`Using kernel spec: ${JSON.stringify(kernelSpec)}`);
+		return new GoSession(this.logger, runtimeMetadata, sessionMetadata, kernelSpec);
 	}
 
 	async *discoverAllRuntimes(): AsyncGenerator<positron.LanguageRuntimeMetadata> {
@@ -74,7 +86,7 @@ export class GoRuntimeManager implements positron.LanguageRuntimeManager {
 	private async captureGonbVersion(
 		gonbPath: string
 	): Promise<{ runtimeVersion?: string; languageVersion?: string }> {
-		const execFileAsync = promisify(execFile)
+		const execFileAsync = promisify(execFile);
 
 			const { stdout } = await execFileAsync(gonbPath, ['-version']);
 			const output = stdout.trim();
@@ -147,6 +159,7 @@ class GoSession extends vscode.Disposable implements positron.LanguageRuntimeSes
 	private _exitEmitter = new vscode.EventEmitter<positron.LanguageRuntimeExit>();
 
 	constructor(
+		readonly logger: vscode.LogOutputChannel,
 		readonly runtimeMetadata: positron.LanguageRuntimeMetadata,
 		readonly metadata: positron.RuntimeSessionMetadata,
 		readonly kernelSpec?: JupyterKernelSpec,
@@ -164,6 +177,7 @@ class GoSession extends vscode.Disposable implements positron.LanguageRuntimeSes
 	}
 
 	async start(): Promise<positron.LanguageRuntimeInfo> {
+		this.logger.info(`Starting Go runtime session for runtime ${this.runtimeMetadata.runtimeName} (${this.runtimeMetadata.runtimeId})`);
 		if (!this.kernel) {
 			this.kernel = await this.createKernel();
 		}
@@ -171,6 +185,7 @@ class GoSession extends vscode.Disposable implements positron.LanguageRuntimeSes
 	}
 
 	async restart(workingDirectory?: string): Promise<void> {
+		this.logger.info(`Restarting Go runtime session for runtime ${this.runtimeMetadata.runtimeName} (${this.runtimeMetadata.runtimeId})`);
 		if (!this.kernel) {
 			throw new Error('Kernel session not started');
 		}
@@ -189,6 +204,12 @@ class GoSession extends vscode.Disposable implements positron.LanguageRuntimeSes
 			throw new Error('Kernel session not started');
 		}
 		return this.kernel.interrupt();
+	}
+
+	// Even though it's not mandatory in the interface, an error is raised if
+	// this is not implemented.
+	getDynState(): Thenable<positron.LanguageRuntimeDynState> {
+		return Promise.resolve(this.dynState);
 	}
 
 	updateSessionName(sessionName: string): void {
