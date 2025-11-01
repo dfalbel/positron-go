@@ -35,8 +35,8 @@ export class GoRuntimeManager implements positron.LanguageRuntimeManager {
 		const kernelSpec: JupyterKernelSpec = {
 			argv: [
 				runtimeMetadata.runtimePath,
-				"-kernel", "'{connection_file}'",
-				"-log_file", "'{log_file}'"
+				"--kernel","{connection_file}",
+				// TODO: forward the log file. Currently log is not captured I think.
 			],
 			display_name: runtimeMetadata.runtimeName,
 			language: 'go',
@@ -300,8 +300,17 @@ class GoSession extends vscode.Disposable implements positron.LanguageRuntimeSes
 				this.metadata,
 				this.dynState);
 
-		// TODO: handle kernel events such as exist, restart, etc.
-		// we should probably capture and just forward trough that session
+		// Forward kernel messages to the session
+		kernel.onDidChangeRuntimeState((state) => {
+			this._stateEmitter.fire(state);
+		});
+		kernel.onDidReceiveRuntimeMessage((message) => {
+			this._messageEmitter.fire(message);
+		});
+		kernel.onDidEndSession((exit) => {
+			this._exitEmitter.fire(exit);
+		});
+
 		return kernel;
 	}
 }
