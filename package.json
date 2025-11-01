@@ -9,7 +9,7 @@
 		"url": "https://github.com/posit-dev/positron-go"
 	},
 	"engines": {
-		"vscode": "^1.74.0",
+		"vscode": "^1.100.0",
 		"positron": "^2025.6.x"
 	},
 	"categories": [
