@@ -3,7 +3,7 @@
 	"displayName": "Positron Go",
 	"description": "Go language runtime support for Positron using the gonb kernel",
 	"version": "0.1.0",
-	"publisher": "posit-dev",
+	"publisher": "dfalbel",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/posit-dev/positron-go"
