@@ -40,7 +40,12 @@ export class GoRuntimeManager implements positron.LanguageRuntimeManager {
 			],
 			display_name: runtimeMetadata.runtimeName,
 			language: 'go',
-			kernel_protocol_version: '5.3'
+			kernel_protocol_version: '5.3',
+			env: {
+				// Appends gonb path in the hope that we'll be able to find 
+				// the other dependencies such as goimports and gopls
+				'PATH': `${process.env.PATH}${path.delimiter}${path.dirname(runtimeMetadata.runtimePath)}`,
+			}
 		};
 		this.logger.info(`Using kernel spec: ${JSON.stringify(kernelSpec)}`);
 		return new GoSession(this.logger, runtimeMetadata, sessionMetadata, kernelSpec);
@@ -170,6 +175,7 @@ class GoSession extends vscode.Disposable implements positron.LanguageRuntimeSes
 			sessionName: runtimeMetadata.runtimeName,
 		}
 	) {
+		// TODO: make a proper disposable list
 		super(()=>{});
 		this.onDidReceiveRuntimeMessage = this._messageEmitter.event;
 		this.onDidChangeRuntimeState = this._stateEmitter.event;
@@ -227,6 +233,7 @@ class GoSession extends vscode.Disposable implements positron.LanguageRuntimeSes
 	}
 
 	execute(code: string, id: string, mode: positron.RuntimeCodeExecutionMode, errorBehavior: positron.RuntimeErrorBehavior): void {
+		this.logger.info(`Executing code in Go runtime session for runtime ${this.runtimeMetadata.runtimeName} (${this.runtimeMetadata.runtimeId}): ${code}`);
 		if (!this.kernel) {
 			throw new Error('Kernel session not started');
 		}
@@ -234,10 +241,11 @@ class GoSession extends vscode.Disposable implements positron.LanguageRuntimeSes
 	}
 
 	isCodeFragmentComplete(code: string): Thenable<positron.RuntimeCodeFragmentStatus> {
-		if (!this.kernel) {
-			throw new Error('Kernel session not started');
-		}
-		return this.kernel.isCodeFragmentComplete(code);	
+		// TODO: make a proper implementation for this.
+		// We probably want to check there's a main function or someline with %%
+		// that in gonb notation is used to introduce a main function.
+		this.logger.info(`Checking code fragment completeness in Go runtime session for runtime ${this.runtimeMetadata.runtimeName} (${this.runtimeMetadata.runtimeId}): ${code}`);
+		return Promise.resolve(positron.RuntimeCodeFragmentStatus.Complete);
 	}
 
 	createClient(id: string, type: positron.RuntimeClientType, params: Record<string, unknown>, metadata?: Record<string, unknown>): Thenable<void> {
@@ -269,6 +277,7 @@ class GoSession extends vscode.Disposable implements positron.LanguageRuntimeSes
 	}
 
 	replyToPrompt(id: string, reply: string): void {
+		this.logger.info(`Replying to prompt in Go runtime session for runtime ${this.runtimeMetadata.runtimeName} (${this.runtimeMetadata.runtimeId}): ${reply}`);
 		if (!this.kernel) {
 			throw new Error('Kernel session not started');
 		}
