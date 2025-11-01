@@ -1,0 +1,37 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: 20
+
+jobs:
+  publish-openvsx:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - run: npm ci
+      - run: npm run build --if-present
+
+      - name: Verify tag matches package.json version
+        run: |
+          TAG=${GITHUB_REF#refs/tags/}
+          PKG=$(node -p "require('./package.json').version")
+          [ "v$PKG" = "$TAG" ] || { echo "Tag $TAG != package.json v$PKG"; exit 1; }
+
+      - name: Package
+        run: npx vsce package --no-yarn
+
+      - name: Publish to OpenVSX
+        run: npx ovsx publish *.vsix -p ${{ secrets.OPEN_VSX_TOKEN }} --skip-duplicate
