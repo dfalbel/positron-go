@@ -10,9 +10,9 @@ Positron Go is a [Positron](https://positron.posit.co/) extension that wires the
 
 ## Prerequisites
 
-- Go 1.21 or newer
-- The `gonb` Jupyter kernel installed and available on your PATH
-- Positron 2025.6.x or newer
+- [Go](https://go.dev) 
+- The [`gonb`](https://github.com/janpfeifer/gonb) Jupyter kernel installed and available on your PATH
+- [Positron](https://positron.posit.co) 2025.6.x or newer
 
 Verify that gonb is installed:
 
@@ -24,6 +24,8 @@ go install github.com/janpfeifer/gonb@latest && \
 // it's actually `$HOME/go/bin/gonb` if that directory is not on your PATH 
 gonb --version 
 ```
+
+Install the positron-go extension.
 
 ## Development
 
